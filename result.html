@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Trainer - Анализ результатов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        nav {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        nav h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+        }
+
+        .page-header .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Analysis Dashboard */
+        .analysis-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-card h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dashboard-card h3 i {
+            color: #3498db;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .chart-container h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 0.75rem;
+        }
+
+        .chart-container h2 i {
+            color: #3498db;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        /* Two Charts Layout */
+        .two-charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .two-charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Progress Summary */
+        .progress-summary {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .progress-summary h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-summary h2 i {
+            color: #3498db;
+        }
+
+        .progress-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .progress-percentage {
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.high {
+            background: #2ecc71;
+        }
+
+        .progress-fill.medium {
+            background: #f39c12;
+        }
+
+        .progress-fill.low {
+            background: #e74c3c;
+        }
+
+        /* Detailed Statistics */
+        .detailed-stats {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .detailed-stats h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detailed-stats h2 i {
+            color: #3498db;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .stats-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .stats-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .performance-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .performance-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .performance-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .performance-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .performance-poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Time Period Selector */
+        .time-period-selector {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .time-period-selector h3 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .period-btn {
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .period-btn:hover {
+            background: #e9ecef;
+        }
+
+        .period-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .date-range-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .date-range-selector input {
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-primary {
+            background: #3498db;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-export {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #27ae60;
+        }
+
+        /* Filters Panel */
+        .filters-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .filters-panel h3 {
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        footer p {
+            margin: 0;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+            
+            nav ul li {
+                width: 100%;
+            }
+            
+            nav ul li a {
+                justify-content: center;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .two-charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .time-period-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .period-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .analysis-dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-range-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <h1>Phishing Trainer</h1>
+            <ul>
+                <li><a href="/dashboard"><i class="bi bi-speedometer2"></i>Панель управления</a></li>
+                <li><a href="/tests"><i class="bi bi-question-circle"></i>Тесты</a></li>
+                <li><a href="/test_results"><i class="bi bi-list-check"></i>Результаты</a></li>
+                <li><a href="/analysis" class="active"><i class="bi bi-bar-chart"></i>Анализ результатов</a></li>
+                <li><a href="/user_management"><i class="bi bi-people"></i>Пользователи</a></li>
+                <li><a href="/logout"><i class="bi bi-box-arrow-right"></i>Выйти</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1><i class="bi bi-bar-chart"></i> Анализ результатов</h1>
+                <div>
+                    <button class="btn btn-export" id="exportBtn">
+                        <i class="bi bi-download"></i> Экспорт данных
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters Panel -->
+            <div class="filters-panel">
+                <h3><i class="bi bi-funnel"></i> Фильтры анализа</h3>
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="dateRange">Период:</label>
+                        <select id="dateRange">
+                            <option value="7days">Последние 7 дней</option>
+                            <option value="30days">Последние 30 дней</option>
+                            <option value="90days">Последние 90 дней</option>
+                            <option value="all">За все время</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="testFilter">Тест:</label>
+                        <select id="testFilter">
+                            <option value="all">Все тесты</option>
+                            <option value="test1">Основы фишинга</option>
+                            <option value="test2">Продвинутый фишинг</option>
+                            <option value="test3">Фишинг в соцсетях</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="userFilter">Пользователь:</label>
+                        <select id="userFilter">
+                            <option value="all">Все пользователи</option>
+                            <option value="user1">Иванов Иван</option>
+                            <option value="user2">Петров Петр</option>
+                            <option value="user3">Сидорова Анна</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="orgFilter">Организация:</label>
+                        <select id="orgFilter">
+                            <option value="all">Все организации</option>
+                            <option value="org1">ООО "Ромашка"</option>
+                            <option value="org2">АО "Весна"</option>
+                            <option value="org3">ПАО "Лето"</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="applyFilters">
+                    <i class="bi bi-check-circle"></i> Применить фильтры
+                </button>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="analysis-dashboard">
+                <div class="dashboard-card">
+                    <h3><i class="bi bi-check-circle"></i> Пройдено тестов</h3>
+                    <div class="stat-number" id="testsCompleted">156</div>
+                    <div class="stat-label">Всего пройдено тестов</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3><i class="bi bi-graph-up"></i> Средний результат</h3>
+                    <div class="stat-number" id="averageScore">78%</div>
+                    <div class="stat-label">Средний процент выполнения</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3><i class="bi bi-people"></i> Участвовало</h3>
+                    <div class="stat-number" id="participants">45</div>
+                    <div class="stat-label">Активных пользователей</div>
+                </div>
+                <div class="dashboard-card">
+                    <h3><i class="bi bi-link-45deg"></i> Переходы по ссылкам</h3>
+                    <div class="stat-number" id="linkClicks">287</div>
+                    <div class="stat-label">Всего переходов</div>
+                </div>
+            </div>
+
+            <!-- Time Period Selector -->
+            <div class="time-period-selector">
+                <h3>Период анализа:</h3>
+                <div class="period-buttons">
+                    <button class="period-btn active" data-period="week">Неделя</button>
+                    <button class="period-btn" data-period="month">Месяц</button>
+                    <button class="period-btn" data-period="quarter">Квартал</button>
+                    <button class="period-btn" data-period="year">Год</button>
+                </div>
+                <div class="date-range-selector">
+                    <input type="date" id="startDate" value="2024-01-01">
+                    <span>-</span>
+                    <input type="date" id="endDate" value="2024-12-31">
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="two-charts-grid">
+                <!-- Chart 1: Test Results Over Time -->
+                <div class="chart-container">
+                    <h2><i class="bi bi-calendar-check"></i> График пройденных тестов</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="testResultsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Link Click Tracking -->
+                <div class="chart-container">
+                    <h2><i class="bi bi-link-45deg"></i> Переходы по ссылкам</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="linkClicksChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Summary -->
+            <div class="progress-summary">
+                <h2><i class="bi bi-speedometer"></i> Сводка по прогрессу</h2>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-title">Высокий результат (>90%)</span>
+                        <span class="progress-percentage">35%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill high" style="width: 35%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-title">Средний результат (70-90%)</span>
+                        <span class="progress-percentage">45%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill medium" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-title">Низкий результат (<70%)</span>
+                        <span class="progress-percentage">20%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill low" style="width: 20%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Statistics -->
+            <div class="detailed-stats">
+                <h2><i class="bi bi-table"></i> Детальная статистика</h2>
+                <div class="table-responsive">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Пользователь</th>
+                                <th>Последний тест</th>
+                                <th>Результат</th>
+                                <th>Переходов по ссылкам</th>
+                                <th>Последний переход</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Иванов Иван</td>
+                                <td>15.01.2024</td>
+                                <td>92%</td>
+                                <td>15</td>
+                                <td>16.01.2024</td>
+                                <td><span class="performance-badge performance-excellent">Отлично</span></td>
+                            </tr>
+                            <tr>
+                                <td>Петров Петр</td>
+                                <td>14.01.2024</td>
+                                <td>78%</td>
+                                <td>8</td>
+                                <td>15.01.2024</td>
+                                <td><span class="performance-badge performance-good">Хорошо</span></td>
+                            </tr>
+                            <tr>
+                                <td>Сидорова Анна</td>
+                                <td>13.01.2024</td>
+                                <td>65%</td>
+                                <td>3</td>
+                                <td>14.01.2024</td>
+                                <td><span class="performance-badge performance-average">Средне</span></td>
+                            </tr>
+                            <tr>
+                                <td>Кузнецов Алексей</td>
+                                <td>12.01.2024</td>
+                                <td>45%</td>
+                                <td>12</td>
+                                <td>13.01.2024</td>
+                                <td><span class="performance-badge performance-poor">Низко</span></td>
+                            </tr>
+                            <tr>
+                                <td>Морозова Елена</td>
+                                <td>11.01.2024</td>
+                                <td>88%</td>
+                                <td>6</td>
+                                <td>12.01.2024</td>
+                                <td><span class="performance-badge performance-good">Хорошо</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Phishing Trainer. Все права защищены.</p>
+            <p>Система анализа результатов фишинговых тестов</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Charts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Test Results Chart (Line Chart)
+            const testResultsCtx = document.getElementById('testResultsChart').getContext('2d');
+            const testResultsChart = new Chart(testResultsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['01.01', '03.01', '05.01', '07.01', '09.01', '11.01'],
+                    datasets: [{
+                        label: 'Результаты тестов (%)',
+                        data: [38, 45, 52, 70, 75, 82],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Initialize Link Clicks Chart (Bar Chart)
+            const linkClicksCtx = document.getElementById('linkClicksChart').getContext('2d');
+            const linkClicksChart = new Chart(linkClicksCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Глухова С.', 'Кузнецов А.', 'Шестаков М.', 'Соколова А.', 'Волкова Е.', 
+                            'Рысьев Г.', 'Шабалин М.', 'Шаповаленко П.', 'Пронских А.', 'Покровский Д.'],
+                    datasets: [{
+                        label: 'Переходы по ссылкам',
+                        data: [1, 1, 0, 1, 0, 1, 1, 1, 1, 1],
+                        backgroundColor: [
+                            '#2ecc71', '#3498db', '#f39c12', '#e74c3c', '#9b59b6',
+                            '#1abc9c', '#34495e', '#d35400', '#27ae60', '#8e44ad'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        borderRadius: 5,
+                        hoverBackgroundColor: [
+                            '#27ae60', '#2980b9', '#e67e22', '#c0392b', '#8e44ad',
+                            '#16a085', '#2c3e50', '#a35200', '#219653', '#7d3c98'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Количество переходов'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Пользователи'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Period selector functionality
+            const periodButtons = document.querySelectorAll('.period-btn');
+            periodButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    periodButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update charts based on selected period
+                    const period = this.dataset.period;
+                    updateChartsByPeriod(period);
+                });
+            });
+
+            // Filter application
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                const dateRange = document.getElementById('dateRange').value;
+                const testFilter = document.getElementById('testFilter').value;
+                const userFilter = document.getElementById('userFilter').value;
+                const orgFilter = document.getElementById('orgFilter').value;
+                
+                // Simulate filter application
+                alert(`Фильтры применены:\nПериод: ${dateRange}\nТест: ${testFilter}\nПользователь: ${userFilter}\nОрганизация: ${orgFilter}`);
+                
+                // Update charts with filtered data
+                updateChartsWithFilters(dateRange, testFilter, userFilter, orgFilter);
+            });
+
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                // Create export data
+                const exportData = {
+                    charts: {
+                        testResults: testResultsChart.data,
+                        linkClicks: linkClicksChart.data
+                    },
+                    filters: {
+                        dateRange: document.getElementById('dateRange').value,
+                        testFilter: document.getElementById('testFilter').value,
+                        userFilter: document.getElementById('userFilter').value,
+                        orgFilter: document.getElementById('orgFilter').value
+                    },
+                    generated: new Date().toISOString()
+                };
+                
+                // Download as JSON
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                const exportFileDefaultName = 'analysis_data_' + new Date().toISOString().slice(0,10) + '.json';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            });
+
+            // Functions to update charts (simulated)
+            function updateChartsByPeriod(period) {
+                // This is where you would fetch new data from the server
+                // For now, we'll just update the chart with some random data
+                console.log('Updating charts for period:', period);
+                
+                // Simulate loading
+                const loadingMsg = document.createElement('div');
+                loadingMsg.className = 'loading-message';
+                loadingMsg.textContent = 'Загрузка данных...';
+                document.querySelector('.main-content').appendChild(loadingMsg);
+                
+                setTimeout(() => {
+                    document.querySelector('.loading-message')?.remove();
+                    
+                    // Update test results chart with new data
+                    const newTestData = Array(20).fill().map(() => Math.floor(Math.random() * 30) + 70);
+                    testResultsChart.data.datasets[0].data = newTestData;
+                    testResultsChart.update();
+                    
+                    // Update link clicks chart with new data
+                    const newClickData = Array(10).fill().map(() => Math.floor(Math.random() * 15) + 1);
+                    linkClicksChart.data.datasets[0].data = newClickData;
+                    linkClicksChart.update();
+                    
+                    // Update dashboard stats
+                    updateDashboardStats();
+                }, 500);
+            }
+
+            function updateChartsWithFilters(dateRange, testFilter, userFilter, orgFilter) {
+                // Simulate API call with filters
+                console.log('Applying filters:', { dateRange, testFilter, userFilter, orgFilter });
+                
+                // Update charts with filtered data
+                updateChartsByPeriod('month'); // Default to month when filters applied
+            }
+
+            function updateDashboardStats() {
+                // Update dashboard stats with random data for demo
+                document.getElementById('testsCompleted').textContent = Math.floor(Math.random() * 50) + 150;
+                document.getElementById('averageScore').textContent = Math.floor(Math.random() * 20) + 75 + '%';
+                document.getElementById('participants').textContent = Math.floor(Math.random() * 20) + 40;
+                document.getElementById('linkClicks').textContent = Math.floor(Math.random() * 100) + 250;
+            }
+
+            // Initialize with current date
+            const today = new Date();
+            const lastMonth = new Date();
+            lastMonth.setMonth(today.getMonth() - 1);
+            
+            document.getElementById('startDate').value = lastMonth.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>

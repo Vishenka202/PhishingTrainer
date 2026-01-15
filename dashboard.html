@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет - Фишинговый Тренажер{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h2>Личный кабинет</h2>
+        <p>Добро пожаловать, {{ user.full_name or user.username }}! 
+           <span class="role-badge role-{{ user.role }}"> 
+               {% if user.role == 'admin' %}Администратор
+               {% elif user.role == 'user' %}Пользователь
+               {% else %}Испытуемый
+               {% endif %}
+           </span>
+        </p>
+    </div>
+
+    <div class="dashboard-content">
+        <!-- Статистика -->
+        <div class="stats-section">
+            <h3>Ваша статистика</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="progress-value">{{ user.training_progress }}%</div>
+                    <div class="stat-label">Прогресс обучения</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ user.training_progress }}%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="tests-value">{{ user.phishing_tests_completed }}</div>
+                    <div class="stat-label">Тестов пройдено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="success-value">85%</div>
+                    <div class="stat-label">Успешность</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Последние тесты -->
+        <div class="recent-tests">
+            <h3>Последние тесты</h3>
+            {% if test_history %}
+            <div class="tests-history">
+                {% for test in test_history %}
+                <div class="test-history-item">
+                    <div class="test-info">
+                        <h4>{{ test.title }}</h4>
+                        <span class="test-date">{{ test.completed_at[:16] }}</span>
+                    </div>
+                    <div class="test-result">
+                        <span class="score {{ 'high-score' if test.score >= 80 else 'medium-score' if test.score >= 60 else 'low-score' }}">
+                            {{ test.score }}%
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="no-tests-message">
+                <p>Вы еще не прошли ни одного теста</p>
+                <a href="{{ url_for('tests_list') }}" class="btn">Пройти первый тест</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Информация о профиле -->
+        <div class="profile-section">
+            <div class="profile-card">
+                <h3>Информация профиля</h3>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя:</label>
+                        <input type="text" id="username" value="{{ user.username }}" readonly>
+                        <small>Имя пользователя нельзя изменить</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="full_name">Полное имя:</label>
+                        <input type="text" id="full_name" name="full_name" value="{{ user.full_name or '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" value="{{ user.email or '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="security_level">Уровень безопасности:</label>
+                        <select id="security_level" name="security_level">
+                            <option value="beginner" {% if user.security_level == 'beginner' %}selected{% endif %}>Начинающий</option>
+                            <option value="intermediate" {% if user.security_level == 'intermediate' %}selected{% endif %}>Средний</option>
+                            <option value="advanced" {% if user.security_level == 'advanced' %}selected{% endif %}>Продвинутый</option>
+                            <option value="expert" {% if user.security_level == 'expert' %}selected{% endif %}>Эксперт</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">Сохранить изменения</button>
+                </form>
+                <div id="profileMessage" class="message"></div>
+            </div>
+
+            <!-- Смена пароля -->
+            <div class="profile-card">
+                <h3>Смена пароля</h3>
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="current_password">Текущий пароль:</label>
+                        <input type="password" id="current_password" name="current_password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_password">Новый пароль:</label>
+                        <input type="password" id="new_password" name="new_password" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Подтвердите новый пароль:</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning">Сменить пароль</button>
+                </form>
+                <div id="passwordMessage" class="message"></div>
+            </div>
+        </div>
+
+        <!-- Информация о системе -->
+        <div class="system-info">
+            <div class="info-card">
+                <h4>Информация о системе</h4>
+                <ul>
+                    <li><strong>Роль:</strong> 
+                        {% if user.role == 'admin' %}Администратор
+                        {% elif user.role == 'user' %}Пользователь
+                        {% else %}Испытуемый
+                        {% endif %}
+                    </li>
+                    <li><strong>Дата регистрации:</strong> {{ user.registration_date }}</li>
+                    <li><strong>Последний вход:</strong> {{ user.last_login }}</li>
+                    <li><strong>Статус:</strong> <span style="color: green;">Активен</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    updateUserStats();
+    
+    const profileForm = document.getElementById('profileForm');
+    const passwordForm = document.getElementById('passwordForm');
+    
+    if (profileForm) {
+        profileForm.addEventListener('submit', handleProfileUpdate);
+    }
+    
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordChange);
+    }
+});
+
+async function updateUserStats() {
+    try {
+        const response = await fetch('/get_user_stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            const stats = data.stats;
+            document.getElementById('progress-value').textContent = stats.training_progress + '%';
+            document.getElementById('tests-value').textContent = stats.tests_completed;
+            document.getElementById('success-value').textContent = stats.success_rate + '%';
+            document.getElementById('rank-value').textContent = stats.rank;
+            
+            const progressFill = document.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = stats.training_progress + '%';
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке статистики:', error);
+    }
+}
+
+async function handleProfileUpdate(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = {
+        full_name: form.full_name.value,
+        email: form.email.value,
+        security_level: form.security_level.value
+    };
+    
+    const messageDiv = document.getElementById('profileMessage');
+    
+    try {
+        const response = await fetch('/update_profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            messageDiv.textContent = data.message;
+            messageDiv.className = 'message success';
+            const headerElement = document.querySelector('.dashboard-header p');
+            if (headerElement) {
+                headerElement.textContent = `Добро пожаловать, ${formData.full_name || form.username.value}!`;
+            }
+        } else {
+            messageDiv.textContent = data.message;
+            messageDiv.className = 'message error';
+        }
+    } catch (error) {
+        messageDiv.textContent = 'Ошибка соединения';
+        messageDiv.className = 'message error';
+    }
+}
+
+async function handlePasswordChange(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const newPassword = form.new_password.value;
+    const confirmPassword = form.confirm_password.value;
+    
+    if (newPassword !== confirmPassword) {
+        const messageDiv = document.getElementById('passwordMessage');
+        messageDiv.textContent = 'Пароли не совпадают';
+        messageDiv.className = 'message error';
+        return;
+    }
+    
+    const formData = {
+        current_password: form.current_password.value,
+        new_password: newPassword
+    };
+    
+    const messageDiv = document.getElementById('passwordMessage');
+    
+    try {
+        const response = await fetch('/change_password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            messageDiv.textContent = data.message;
+            messageDiv.className = 'message success';
+            form.reset();
+        } else {
+            messageDiv.textContent = data.message;
+            messageDiv.className = 'message error';
+        }
+    } catch (error) {
+        messageDiv.textContent = 'Ошибка соединения';
+        messageDiv.className = 'message error';
+    }
+}
+</script>
+{% endblock %}

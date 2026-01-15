@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Сравнение с другими тренажерами</h2>
+    
+    <div class="comparison-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Функция</th>
+                    <th>Наш тренажер</th>
+                    <th>StopPhish</th>
+                    <th>Phishman</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Реалистичные сценарии</td>
+                    <td>✓</td>
+                    <td>✗</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td>Кастомизация</td>
+                    <td>✓</td>
+                    <td>✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td>Бесплатное использование</td>
+                    <td>✓</td>
+                    <td>✗</td>
+                    <td>✗</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="advantages">
+        <h3>Наши преимущества</h3>
+        <div class="advantage-list">
+            <div class="advantage">
+                <h4>Интерактивные уроки</h4>
+                <p>Практическое обучение через реальные сценарии</p>
+            </div>
+            <div class="advantage">
+                <h4>Детальная аналитика</h4>
+                <p>Подробные отчеты о вашей уязвимости к фишингу</p>
+            </div>
+            <div class="advantage">
+                <h4>Адаптивная сложность</h4>
+                <p>Автоматическая подстройка под ваш уровень знаний</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

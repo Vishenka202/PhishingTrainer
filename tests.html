@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Тесты - Фишинговый Тренажер{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h2>Доступные тесты</h2>
+        <p>Проверьте свои знания в области кибербезопасности и фишинга</p>
+    </div>
+
+    <div class="tests-grid">
+        {% for test in tests %}
+        <div class="test-card">
+            <div class="test-header">
+                <h3>{{ test.title }}</h3>
+                <span class="difficulty-badge difficulty-{{ test.difficulty }}">
+                    {% if test.difficulty == 'beginner' %}Начинающий
+                    {% elif test.difficulty == 'intermediate' %}Средний
+                    {% else %}Продвинутый
+                    {% endif %}
+                </span>
+            </div>
+            
+            <p class="test-description">{{ test.description }}</p>
+            
+            <div class="test-meta">
+                <div class="meta-item">
+                    <strong>{{ test.question_count }}</strong>
+                    <span>вопросов</span>
+                </div>
+                {% if test.time_limit > 0 %}
+                <div class="meta-item">
+                    <strong>{{ test.time_limit }}</strong>
+                    <span>минут</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="test-progress">
+                {% if test.status == 'completed' %}
+                <div class="progress-info">
+                    <span>Результат: {{ test.score }}%</span>
+                    <span>Попыток: {{ test.attempts }}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ test.score }}%"></div>
+                </div>
+                {% elif test.status == 'started' %}
+                <div class="progress-info">
+                    <span>Тест начат</span>
+                </div>
+                {% else %}
+                <div class="progress-info">
+                    <span>Тест не начат</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="test-actions">
+                {% if test.status == 'completed' %}
+                <a href="{{ url_for('take_test', test_id=test.id) }}" class="btn btn-secondary">Пройти снова</a>
+                {% else %}
+                <a href="{{ url_for('take_test', test_id=test.id) }}" class="btn">Начать тест</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not tests %}
+    <div class="no-tests-message">
+        <h3>Тесты пока не доступны</h3>
+        <p>В настоящее время нет активных тестов. Обратитесь к администратору системы.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

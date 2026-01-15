@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями - Фишинговый Тренажер{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h2>Управление пользователями</h2>
+        <p>
+            {% if session.role == 'admin' %}
+            Управление организациями и пользователями системы
+            {% else %}
+            Управление участниками вашей организации
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Форма создания пользователя -->
+    <div class="management-section">
+        <div class="management-card">
+            <h3>
+                {% if session.role == 'admin' %}
+                Создать нового пользователя
+                {% else %}
+                Добавить участника информационного обмена
+                {% endif %}
+            </h3>
+            <form id="createUserForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new_username">Имя пользователя:</label>
+                        <input type="text" id="new_username" name="username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_email">Email:</label>
+                        <input type="email" id="new_email" name="email" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new_full_name">Полное имя:</label>
+                        <input type="text" id="new_full_name" name="full_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_password">Пароль:</label>
+                        <input type="password" id="new_password" name="password" required minlength="6">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    {% if session.role == 'admin' %}
+                    <div class="form-group">
+                        <label for="new_role">Роль:</label>
+                        <select id="new_role" name="role">
+                            <option value="user">Пользователь (Администратор организации)</option>
+                            <option value="test_subject">Испытуемый</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_organization">Организация:</label>
+                        <input type="text" id="new_organization" name="organization" placeholder="Название организации" required>
+                    </div>
+                    {% else %}
+                    <input type="hidden" name="role" value="test_subject">
+                    <div class="form-group">
+                        <label for="new_organization">Организация:</label>
+                        <input type="text" id="new_organization" value="{{ session.organization }}" readonly>
+                        <small>Организация назначается автоматически</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <button type="submit" class="btn">
+                            {% if session.role == 'admin' %}
+                            Создать пользователя
+                            {% else %}
+                            Добавить участника
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div id="createUserMessage" class="message"></div>
+        </div>
+
+        <!-- Для администратора - панель организаций -->
+        {% if session.role == 'admin' %}
+        <div class="management-card">
+            <h3>Управление организациями</h3>
+            <div class="organizations-panel">
+                <div class="organizations-list">
+                    <h4>Список организаций</h4>
+                    <div class="organizations-grid" id="organizationsGrid">
+                        {% for org in organizations %}
+                        <div class="organization-card" data-organization="{{ org }}">
+                            <h5>{{ org }}</h5>
+                            <button class="btn btn-sm" onclick="loadOrganizationUsers('{{ org }}')">
+                                Показать участников
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="organization-users">
+                    <h4 id="organizationTitle">Выберите организацию</h4>
+                    <div id="organizationUsersContainer">
+                        <div class="no-users-message">
+                            <p>Выберите организацию для просмотра участников</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Список пользователей -->
+        <div class="management-card">
+            <h3>
+                {% if session.role == 'admin' %}
+                Все пользователи системы
+                {% else %}
+                Участники вашей организации
+                {% endif %}
+            </h3>
+            
+            {% if users %}
+            <div class="users-table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Имя пользователя</th>
+                            <th>Полное имя</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            {% if session.role == 'admin' %}
+                            <th>Организация</th>
+                            <th>Создал</th>
+                            {% endif %}
+                            <th>Дата регистрации</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.full_name or 'Не указано' }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="role-badge role-{{ user.role }}">
+                                    {% if user.role == 'admin' %}Администратор
+                                    {% elif user.role == 'user' %}Пользователь
+                                    {% else %}Испытуемый
+                                    {% endif %}
+                                </span>
+                            </td>
+                            {% if session.role == 'admin' %}
+                            <td>{{ user.organization or 'Не указана' }}</td>
+                            <td>{{ user.created_by_name or 'Система' }}</td>
+                            {% endif %}
+                            <td>{{ user.registration_date }}</td>
+                            <td>
+                                <button class="btn-danger btn-sm" onclick="deleteUser({{ user.id }})">
+                                    Удалить
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-users-message">
+                <p>Пользователи не найдены</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+// Функции для управления пользователями
+async function handleCreateUser(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = {
+        username: form.username.value,
+        email: form.email.value,
+        password: form.password.value,
+        full_name: form.full_name.value,
+        role: form.role ? form.role.value : 'test_subject',
+        organization: form.organization ? form.organization.value : ''
+    };
+    
+    const messageDiv = document.getElementById('createUserMessage');
+    
+    try {
+        const response = await fetch('/create_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            messageDiv.textContent = data.message;
+            messageDiv.className = 'message success';
+            form.reset();
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            messageDiv.textContent = data.message;
+            messageDiv.className = 'message error';
+        }
+    } catch (error) {
+        messageDiv.textContent = 'Ошибка соединения';
+        messageDiv.className = 'message error';
+    }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/delete_user/' + userId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('Ошибка соединения');
+    }
+}
+
+// Функции для работы с организациями (только для администратора)
+async function loadOrganizationUsers(organization) {
+    try {
+        const response = await fetch('/organization_users/' + encodeURIComponent(organization));
+        const data = await response.json();
+        
+        if (data.success) {
+            displayOrganizationUsers(data.users, data.organization);
+        } else {
+            alert('Ошибка при загрузке пользователей организации');
+        }
+    } catch (error) {
+        alert('Ошибка соединения');
+    }
+}
+
+function displayOrganizationUsers(users, organization) {
+    const container = document.getElementById('organizationUsersContainer');
+    const title = document.getElementById('organizationTitle');
+    
+    title.textContent = `Участники организации: ${organization}`;
+    
+    if (users.length === 0) {
+        container.innerHTML = `
+            <div class="no-users-message">
+                <p>В этой организации нет участников</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = `
+        <div class="users-table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Имя пользователя</th>
+                        <th>Полное имя</th>
+                        <th>Email</th>
+                        <th>Дата регистрации</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    users.forEach(user => {
+        html += `
+            <tr>
+                <td>${user.username}</td>
+                <td>${user.full_name || 'Не указано'}</td>
+                <td>${user.email}</td>
+                <td>${user.registration_date}</td>
+                <td>
+                    <button class="btn-danger btn-sm" onclick="deleteUser(${user.id})">
+                        Удалить
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    document.querySelectorAll('.organization-card').forEach(card => {
+        card.classList.remove('active');
+    });
+    document.querySelector(`.organization-card[data-organization="${organization}"]`).classList.add('active');
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    const createUserForm = document.getElementById('createUserForm');
+    
+    if (createUserForm) {
+        createUserForm.addEventListener('submit', handleCreateUser);
+    }
+    
+    {% if session.role == 'admin' and organizations %}
+    const firstOrgCard = document.querySelector('.organization-card');
+    if (firstOrgCard) {
+        const firstOrganization = firstOrgCard.getAttribute('data-organization');
+        loadOrganizationUsers(firstOrganization);
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}
